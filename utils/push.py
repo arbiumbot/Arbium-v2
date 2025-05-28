@@ -10,6 +10,6 @@ async def send_push_to_all(bot: Bot, text: str):
             await bot.send_message(uid, text)
             count += 1
         except Exception as e:
-            print(f"Не вдалося надіслати {uid}: {e}")
+            print(f"❌ Не вдалося надіслати повідомлення користувачу {uid}: {e}")
 
     return count
