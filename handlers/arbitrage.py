@@ -4,6 +4,7 @@ from utils.api_clients.binance import format_p2p_result
 from utils.api_clients.kucoin import get_spot_price_kucoin
 from utils.api_clients.mexc import get_spot_price_mexc
 from utils.api_clients.okx import get_spot_price_okx
+from utils.api_clients.bitget import get_spot_price_bitget
 
 router = Router()
 
@@ -35,3 +36,11 @@ async def show_okx_price(message: Message):
         await message.answer(f"💱 Поточна ціна BTC на OKX: <b>{price:.2f} USDT</b>")
     else:
         await message.answer("❌ Не вдалося отримати ціну з OKX.")
+
+@router.message(lambda m: m.text == "💱 Bitget ціна")
+async def show_bitget_price(message: Message):
+    price = await get_spot_price_bitget("BTCUSDT")
+    if price:
+        await message.answer(f"💱 Поточна ціна BTC на Bitget: <b>{price:.2f} USDT</b>")
+    else:
+        await message.answer("❌ Не вдалося отримати ціну з Bitget.")
