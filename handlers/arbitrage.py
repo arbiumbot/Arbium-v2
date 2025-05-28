@@ -3,6 +3,7 @@ from aiogram.types import Message
 from utils.api_clients.binance import format_p2p_result
 from utils.api_clients.kucoin import get_spot_price_kucoin
 from utils.api_clients.mexc import get_spot_price_mexc
+from utils.api_clients.okx import get_spot_price_okx
 
 router = Router()
 
@@ -26,3 +27,11 @@ async def show_mexc_price(message: Message):
         await message.answer(f"💱 Поточна ціна BTC на MEXC: <b>{price:.2f} USDT</b>")
     else:
         await message.answer("❌ Не вдалося отримати ціну з MEXC.")
+
+@router.message(lambda m: m.text == "💱 OKX ціна")
+async def show_okx_price(message: Message):
+    price = await get_spot_price_okx("BTC-USDT")
+    if price:
+        await message.answer(f"💱 Поточна ціна BTC на OKX: <b>{price:.2f} USDT</b>")
+    else:
+        await message.answer("❌ Не вдалося отримати ціну з OKX.")
