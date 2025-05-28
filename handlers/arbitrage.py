@@ -5,13 +5,19 @@ from utils.api_clients.kucoin import get_spot_price_kucoin
 from utils.api_clients.mexc import get_spot_price_mexc
 from utils.api_clients.okx import get_spot_price_okx
 from utils.api_clients.bitget import get_spot_price_bitget
+from utils.arbitrage_finder import find_top_arbitrages
 
 router = Router()
 
-@router.message(lambda m: m.text == "📊 Арбітраж")
-async def show_binance_arbitrage(message: Message):
-    result = await format_p2p_result(asset="USDT", fiat="UAH")
-    await message.answer(result)
+router.message(lambda m: m.text == "🔍 Арбітраж")
+async def show_arbitrage_opportunities(message: Message):
+    await message.answer("⏳ Шукаю арбітражні можливості між біржами...")
+    try:
+        result = await find_top_arbitrages()
+        await message.answer(result)
+    except Exception as e:
+        await message.answer("❌ Сталася помилка під час пошуку арбітражу.")
+        print(f"[АРБІТРАЖ][ПОМИЛКА] {e}")
 
 @router.message(lambda m: m.text == "💱 KuCoin ціна")
 async def show_kucoin_price(message: Message):
