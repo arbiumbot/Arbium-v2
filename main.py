@@ -6,15 +6,7 @@ from aiogram.enums import ParseMode
 from aiogram.client.default import DefaultBotProperties
 
 from config import BOT_TOKEN, WEBHOOK_URL
-from handlers import (
-    start,
-    arbitrage,
-    chart,
-    history,
-    top,
-    settings,
-    push
-)
+from handlers import start, arbitrage, chart, history, top, settings, push
 
 # Ініціалізація бота
 bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
@@ -31,7 +23,7 @@ dp.include_routers(
     push.router
 )
 
-# Lifespan замість on_event
+# Lifespan — запуск і завершення
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logging.basicConfig(level=logging.INFO)
@@ -40,12 +32,12 @@ async def lifespan(app: FastAPI):
     await bot.delete_webhook()
     await bot.session.close()
 
-# FastAPI з lifespan
+# FastAPI застосунок
 app = FastAPI(lifespan=lifespan)
 
 # Webhook endpoint
 @app.post(f"/webhook/bot/{BOT_TOKEN}")
-async def telegram_webhook(req: Request):
-    body = await req.body()
+async def telegram_webhook(request: Request):
+    body = await request.body()
     await dp.feed_raw_update(bot=bot, update=body)
     return {"status": "ok"}
