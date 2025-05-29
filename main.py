@@ -6,17 +6,8 @@ from aiogram.enums import ParseMode
 from aiogram.client.default import DefaultBotProperties
 
 from config import BOT_TOKEN, WEBHOOK_URL
-from handlers import (
-    start,
-    arbitrage,
-    chart,
-    history,
-    top,
-    settings,
-    push
-)
+from handlers import start
 
-# Ініціалізація бота і диспетчера
 bot = Bot(
     token=BOT_TOKEN,
     default=DefaultBotProperties(parse_mode=ParseMode.HTML)
@@ -24,17 +15,9 @@ bot = Bot(
 dp = Dispatcher()
 
 # Підключення роутерів
-dp.include_routers(
-    start.router,
-    arbitrage.router,
-    chart.router,
-    history.router,
-    top.router,
-    settings.router,
-    push.router
-)
+dp.include_router(start.router)
 
-# Lifespan (замість on_event)
+# Lifespan
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logging.basicConfig(level=logging.INFO)
@@ -43,17 +26,12 @@ async def lifespan(app: FastAPI):
     await bot.delete_webhook()
     await bot.session.close()
 
-# FastAPI з lifespan
+# FastAPI instance
 app = FastAPI(lifespan=lifespan)
 
-# Webhook endpoint з логами
+# Webhook endpoint
 @app.post(f"/webhook/bot/{BOT_TOKEN}")
 async def telegram_webhook(req: Request):
-    data = await req.body()
-
-    # 🔍 Логування для діагностики
-    print("✅ Отримано запит від Telegram")
-    print(data)
-
-    await dp.feed_raw_update(bot=bot, update=data)
+    body = await req.body()
+    await dp.feed_raw_update(bot=bot, update=body)
     return {"status": "ok"}
