@@ -24,20 +24,17 @@ dp.include_routers(
 )
 
 # Lifespan — запуск і завершення
-@asynccontextmanager
+asynccontextmanager
 async def lifespan(app: FastAPI):
-    logging.basicConfig(level=logging.INFO)
     await bot.set_webhook(WEBHOOK_URL)
     yield
     await bot.delete_webhook()
     await bot.session.close()
 
-# FastAPI застосунок
 app = FastAPI(lifespan=lifespan)
 
-# Webhook endpoint
 @app.post(f"/webhook/bot/{BOT_TOKEN}")
-async def telegram_webhook(request: Request):
-    body = await request.body()
-    await dp.feed_raw_update(bot=bot, update=body)
+async def telegram_webhook(req: Request):
+    data = await req.body()
+    await dp.feed_raw_update(bot=bot, update=data)
     return {"status": "ok"}
