@@ -1,37 +1,41 @@
 import logging
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Request
+
 from aiogram import Bot, Dispatcher
-from aiogram.enums import ParseMode
 from aiogram.client.default import DefaultBotProperties
+from aiogram.enums import ParseMode
+from fastapi import FastAPI, Request
 
 from config import BOT_TOKEN, WEBHOOK_URL
-from handlers import start
+from handlers import start, arbitrage, chart, history, top, settings, push
 
-bot = Bot(
-    token=BOT_TOKEN,
-    default=DefaultBotProperties(parse_mode=ParseMode.HTML)
-)
+bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 dp = Dispatcher()
+dp.include_routers(
+    start.router,
+    arbitrage.router,
+    chart.router,
+    history.router,
+    top.router,
+    settings.router,
+    push.router
+)
 
-# Підключення роутерів
-dp.include_router(start.router)
-
-# Lifespan
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logging.basicConfig(level=logging.INFO)
+    print("🔄 Setting webhook...")
     await bot.set_webhook(WEBHOOK_URL)
+    print("✅ Webhook set!")
     yield
+    print("♻️ Shutting down...")
     await bot.delete_webhook()
     await bot.session.close()
 
-# FastAPI instance
 app = FastAPI(lifespan=lifespan)
 
-# Webhook endpoint
 @app.post(f"/webhook/bot/{BOT_TOKEN}")
-async def telegram_webhook(req: Request):
-    body = await req.body()
-    await dp.feed_raw_update(bot=bot, update=body)
+async def telegram_webhook(request: Request):
+    update = await request.json()
+    await dp.feed_raw_update(bot=bot, update=update)
     return {"status": "ok"}
